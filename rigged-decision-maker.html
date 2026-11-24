@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎡 Where Should We Go?</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --card: #1c1c28;
+  --border: #2a2a3a;
+  --text: #f0f0ff;
+  --muted: #7070a0;
+  --accent: #7c5cfc;
+  --accent2: #fc5c8a;
+  --win: #5cfcb0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── TABS ─────────────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  padding: 20px 20px 0;
+}
+.tab-btn {
+  padding: 10px 24px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+.tab-btn:hover:not(.active) { border-color: var(--muted); color: var(--text); }
+
+/* ── SHARED CONFIG ────────────────────────────────────────── */
+.page { display: none; padding: 24px 20px; max-width: 540px; margin: 0 auto; }
+.page.active { display: block; }
+
+h2.page-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.page-sub {
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.82rem;
+  margin-bottom: 24px;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+
+/* Options list */
+.options-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.option-input {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.option-input:focus { border-color: var(--accent); }
+.del-btn {
+  width: 34px; height: 34px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.del-btn:hover { background: #ff4d4d20; border-color: #ff4d4d; color: #ff4d4d; }
+
+.add-btn {
+  width: 100%;
+  padding: 10px;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 20px;
+}
+.add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Rigged option */
+.rigged-row {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.rigged-row label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.rigged-row label span { font-size: 0.85rem; }
+.rigged-row label .badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--accent2);
+  color: white;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: auto;
+}
+
+/* Toggle switch */
+.toggle {
+  position: relative;
+  width: 40px; height: 22px;
+  flex-shrink: 0;
+}
+.toggle input { display: none; }
+.toggle-track {
+  position: absolute; inset: 0;
+  background: var(--border);
+  border-radius: 999px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.toggle input:checked + .toggle-track { background: var(--accent); }
+.toggle-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  pointer-events: none;
+}
+.toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+.rigged-option-select {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  outline: none;
+}
+
+.rigged-msg-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  outline: none;
+  margin-top: 8px;
+  resize: none;
+  min-height: 60px;
+}
+
+/* Go button */
+.go-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: opacity 0.2s, transform 0.1s;
+  box-shadow: 0 4px 30px #7c5cfc40;
+}
+.go-btn:hover { opacity: 0.9; }
+.go-btn:active { transform: scale(0.98); }
+
+/* ── SPIN WHEEL ────────────────────────────────────────────── */
+#spin-game { text-align: center; display: none; }
+
+.wheel-container {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin: 20px auto;
+}
+
+#wheel-canvas {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  box-shadow: 0 0 40px #7c5cfc40;
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  z-index: 10;
+}
+
+.wheel-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px; height: 40px;
+  background: var(--bg);
+  border-radius: 50%;
+  border: 3px solid white;
+  z-index: 5;
+}
+
+.spin-btn {
+  padding: 14px 40px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 1px;
+  margin-top: 20px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px #7c5cfc40;
+}
+.spin-btn:hover { transform: scale(1.04); }
+.spin-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ── SWIPE CARDS ───────────────────────────────────────────── */
+#swipe-game { text-align: center; display: none; }
+
+.swipe-instructions {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.swipe-instructions div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.swipe-instructions .arrow {
+  font-size: 1.2rem;
+}
+
+.card-stack {
+  position: relative;
+  width: 300px;
+  height: 220px;
+  margin: 0 auto 24px;
+}
+
+.card {
+  position: absolute;
+  width: 300px;
+  height: 220px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: grab;
+  user-select: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  touch-action: none;
+  padding: 20px;
+  text-align: center;
+}
+.card:active { cursor: grabbing; }
+.card .card-emoji { font-size: 2.5rem; margin-bottom: 12px; }
+.card .card-label { font-size: 1.1rem; font-weight: 700; }
+.card .card-num { font-size: 0.7rem; color: var(--muted); margin-top: 8px; }
+
+/* stacked cards behind */
+.card.behind-1 {
+  transform: rotate(-3deg) scale(0.95);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.card.behind-2 {
+  transform: rotate(3deg) scale(0.9);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.swipe-vote {
+  position: absolute;
+  font-size: 2rem;
+  font-weight: 900;
+  opacity: 0;
+  pointer-events: none;
+  border: 4px solid;
+  border-radius: 10px;
+  padding: 4px 12px;
+  top: 20px;
+}
+.swipe-vote.nope { left: 16px; color: #ff4d4d; border-color: #ff4d4d; transform: rotate(-15deg); }
+.swipe-vote.yep  { right: 16px; color: #5cfcb0; border-color: #5cfcb0; transform: rotate(15deg); }
+
+.swipe-action-btns {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.swipe-action-btns button {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--card);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.swipe-action-btns button:hover { transform: scale(1.1); }
+.swipe-action-btns .btn-nope:hover { border-color: #ff4d4d; background: #ff4d4d20; }
+.swipe-action-btns .btn-yep:hover  { border-color: #5cfcb0; background: #5cfcb020; }
+
+/* ── RESULT MODAL ──────────────────────────────────────────── */
+#result-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+#result-overlay.show { display: flex; }
+#result-modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 36px 28px;
+  max-width: 340px;
+  width: 90%;
+  text-align: center;
+  animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+#result-modal .res-emoji { font-size: 4rem; margin-bottom: 12px; display: block; }
+#result-modal .res-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+#result-modal .res-pick {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--win);
+  margin: 14px 0;
+  padding: 12px;
+  background: #5cfcb015;
+  border-radius: 12px;
+  border: 1px solid #5cfcb030;
+}
+#result-modal .res-msg {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.res-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 4px;
+  transition: opacity 0.2s;
+}
+.res-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+.res-btn.secondary { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+.res-btn:hover { opacity: 0.85; }
+
+/* Confetti canvas */
+#confetti-canvas {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 998;
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .wheel-container, #wheel-canvas { width: 260px; height: 260px; }
+  .card, .card-stack { width: 270px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════════ -->
+<div style="text-align:center;padding:28px 20px 0">
+  <div style="font-size:2.5rem">🎡</div>
+  <h1 style="font-size:1.6rem;font-weight:900;letter-spacing:2px;margin-top:6px">WHERE SHOULD WE GO?</h1>
+  <p style="color:var(--muted);font-size:0.8rem;margin-top:4px">Totally fair and unbiased™</p>
+</div>
+
+<!-- ══ TABS ════════════════════════════════════════════════════ -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('wheel')">🎡 Spin Wheel</button>
+  <button class="tab-btn" onclick="switchTab('swipe')">💘 Swipe Cards</button>
+</div>
+
+<!-- ══ WHEEL CONFIG PAGE ═══════════════════════════════════════ -->
+<div class="page active" id="wheel-config">
+  <h2 class="page-title">Spin the Wheel</h2>
+  <p class="page-sub">Add your options. Spin. Fate decides. (Fate is rigged.)</p>
+
+  <div class="section-label">📍 Options</div>
+  <div class="options-list" id="wheel-options-list"></div>
+  <button class="add-btn" onclick="addOption('wheel')">＋ Add another option</button>
+
+  <div class="section-label">🎯 Rigging</div>
+  <div class="rigged-row">
+    <label>
+      <div class="toggle">
+        <input type="checkbox" id="wheel-rigged-toggle" onchange="toggleRiggedUI('wheel')">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </div>
+      <span>Always land on a secret option</span>
+      <span class="badge">RIGGED</span>
+    </label>
+    <div id="wheel-rigged-opts" style="display:none">
+      <div class="section-label" style="margin-top:0;margin-bottom:6px">Secretly always pick:</div>
+      <select class="rigged-option-select" id="wheel-rigged-pick"></select>
+      <textarea class="rigged-msg-input" id="wheel-rigged-msg" placeholder="Message to show (e.g. 'The universe has spoken — it's literally always us at Sharma's 🌮')"></textarea>
+    </div>
+  </div>
+
+  <button class="go-btn" onclick="launchWheel()">🎡 Launch Wheel</button>
+</div>
+
+<!-- ══ SWIPE CONFIG PAGE ═══════════════════════════════════════ -->
+<div class="page" id="swipe-config">
+  <h2 class="page-title">Swipe to Choose</h2>
+  <p class="page-sub">Swipe right for yes, left for no. We'll "randomly" pick the best one.</p>
+
+  <div class="section-label">📍 Options</div>
+  <div class="options-list" id="swipe-options-list"></div>
+  <button class="add-btn" onclick="addOption('swipe')">＋ Add another option</button>
+
+  <div class="section-label">🎯 Rigging</div>
+  <div class="rigged-row">
+    <label>
+      <div class="toggle">
+        <input type="checkbox" id="swipe-rigged-toggle" onchange="toggleRiggedUI('swipe')">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </div>
+      <span>Secret outcome no matter what</span>
+      <span class="badge">RIGGED</span>
+    </label>
+    <div id="swipe-rigged-opts" style="display:none">
+      <div class="section-label" style="margin-top:0;margin-bottom:6px">The "winner" will always be:</div>
+      <select class="rigged-option-select" id="swipe-rigged-pick"></select>
+      <textarea class="rigged-msg-input" id="swipe-rigged-msg" placeholder="Message to show (e.g. 'That's fate!! We were always going there 😂')"></textarea>
+    </div>
+  </div>
+
+  <button class="go-btn" onclick="launchSwipe()">💘 Launch Cards</button>
+</div>
+
+<!-- ══ SPIN WHEEL GAME ═════════════════════════════════════════ -->
+<div class="page" id="spin-game">
+  <div style="text-align:center;">
+    <h2 class="page-title" style="margin-bottom:4px">Spin It!</h2>
+    <p class="page-sub" style="margin-bottom:0">The universe will decide your fate...</p>
+    <div class="wheel-container">
+      <div class="wheel-pointer">▼</div>
+      <canvas id="wheel-canvas" width="300" height="300"></canvas>
+      <div class="wheel-center"></div>
+    </div>
+    <button class="spin-btn" id="spin-btn" onclick="spinWheel()">SPIN ✨</button>
+    <br><br>
+    <button class="go-btn" style="max-width:200px;padding:10px;font-size:0.85rem;margin:0 auto;" onclick="backToConfig('wheel')">← Back</button>
+  </div>
+</div>
+
+<!-- ══ SWIPE GAME ══════════════════════════════════════════════ -->
+<div class="page" id="swipe-game">
+  <h2 class="page-title" style="margin-bottom:4px">Swipe to Choose!</h2>
+  <p class="page-sub">Left = Nope · Right = Let's go!</p>
+  <div class="swipe-instructions">
+    <div><span class="arrow">👈</span> Nope</div>
+    <div>Yes! <span class="arrow">👉</span></div>
+  </div>
+  <div class="card-stack" id="card-stack"></div>
+  <div class="swipe-action-btns">
+    <button class="btn-nope" onclick="swipeCard('left')" title="Nope">❌</button>
+    <button class="btn-yep"  onclick="swipeCard('right')">✅</button>
+  </div>
+  <p id="swipe-progress" style="color:var(--muted);font-size:0.8rem;margin-top:16px;text-align:center"></p>
+  <br>
+  <button class="go-btn" style="max-width:200px;padding:10px;font-size:0.85rem;margin:0 auto;" onclick="backToConfig('swipe')">← Back</button>
+</div>
+
+<!-- ══ RESULT MODAL ════════════════════════════════════════════ -->
+<canvas id="confetti-canvas"></canvas>
+<div id="result-overlay">
+  <div id="result-modal">
+    <span class="res-emoji" id="res-emoji">🎉</span>
+    <div class="res-title" id="res-title">We're going to…</div>
+    <div class="res-pick" id="res-pick"></div>
+    <div class="res-msg" id="res-msg"></div>
+    <button class="res-btn primary" id="res-replay-btn">🔄 Spin Again</button>
+    <button class="res-btn secondary" onclick="closeResult()">Close</button>
+  </div>
+</div>
+
+<script>
+// ══ STATE ══════════════════════════════════════════════════════
+let activeTab = 'wheel';
+let wheelOptions = [];
+let swipeOptions = [];
+let riggedPick = { wheel: null, swipe: null };
+let riggedMsg  = { wheel: '', swipe: '' };
+let isRigged   = { wheel: false, swipe: false };
+
+// Swipe state
+let swipeCards = [];
+let swipeCurrent = 0;
+let swipeYeses = [];
+let isDragging = false;
+let startX = 0, startY = 0, currentX = 0;
+
+// Wheel state
+let spinning = false;
+let wheelAngle = 0;
+let wheelColors = [];
+
+const EMOJIS = ['🍕','☕','🌮','🍜','🎬','🎮','🌊','🏔️','🎪','🎲','🌺','🎸'];
+const PALETTE = [
+  '#7c5cfc','#fc5c8a','#5cfcb0','#fcca5c','#5cb4fc','#fc8a5c',
+  '#c45cfc','#5cfce0','#fc5c5c','#8afc5c','#5c8afc','#fcf05c'
+];
+
+// ══ INIT ═══════════════════════════════════════════════════════
+(function init() {
+  const defaults = ['Coffee at our usual spot ☕','That noodle place we love 🍜','Just driving around 🚗','Ice cream crawl 🍦','Rooftop hang 🌆'];
+  defaults.forEach(d => {
+    addOptionItem('wheel', d);
+    addOptionItem('swipe', d);
+  });
+  refreshRiggedDropdowns();
+})();
+
+// ══ TABS ═══════════════════════════════════════════════════════
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'wheel') || (i === 1 && tab === 'swipe'));
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(tab + '-config').classList.add('active');
+}
+
+// ══ OPTIONS LIST ═══════════════════════════════════════════════
+function addOption(type) {
+  addOptionItem(type, '');
+  refreshRiggedDropdowns();
+}
+
+function addOptionItem(type, value = '') {
+  const list = document.getElementById(type + '-options-list');
+  const row = document.createElement('div');
+  row.className = 'option-row';
+  const emoji = EMOJIS[list.children.length % EMOJIS.length];
+  row.innerHTML = `
+    <input class="option-input" type="text" value="${value}" placeholder="${emoji} Option ${list.children.length + 1}…"
+      oninput="refreshRiggedDropdowns()" />
+    <button class="del-btn" onclick="removeOption(this, '${type}')">✕</button>
+  `;
+  list.appendChild(row);
+}
+
+function removeOption(btn, type) {
+  const list = document.getElementById(type + '-options-list');
+  if (list.children.length <= 2) return; // keep at least 2
+  btn.closest('.option-row').remove();
+  refreshRiggedDropdowns();
+}
+
+function getOptionValues(type) {
+  return [...document.querySelectorAll(`#${type}-options-list .option-input`)]
+    .map(i => i.value.trim()).filter(Boolean);
+}
+
+function refreshRiggedDropdowns() {
+  ['wheel','swipe'].forEach(type => {
+    const opts = getOptionValues(type);
+    const sel = document.getElementById(type + '-rigged-pick');
+    const prev = sel.value;
+    sel.innerHTML = opts.map((o,i) => `<option value="${i}">${o}</option>`).join('');
+    // restore prev if still valid
+    if (prev && prev < opts.length) sel.value = prev;
+  });
+}
+
+function toggleRiggedUI(type) {
+  const on = document.getElementById(type + '-rigged-toggle').checked;
+  document.getElementById(type + '-rigged-opts').style.display = on ? 'block' : 'none';
+}
+
+// ══ SPIN WHEEL ═════════════════════════════════════════════════
+function launchWheel() {
+  wheelOptions = getOptionValues('wheel');
+  if (wheelOptions.length < 2) { alert('Add at least 2 options!'); return; }
+
+  isRigged.wheel  = document.getElementById('wheel-rigged-toggle').checked;
+  riggedPick.wheel = parseInt(document.getElementById('wheel-rigged-pick').value);
+  riggedMsg.wheel  = document.getElementById('wheel-rigged-msg').value.trim()
+    || `The wheel has spoken and it's always been this 😏`;
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('spin-game').classList.add('active');
+
+  wheelAngle = 0;
+  drawWheel(wheelAngle);
+}
+
+function drawWheel(rotation) {
+  const canvas = document.getElementById('wheel-canvas');
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2, r = cx - 4;
+  const n = wheelOptions.length;
+  const arc = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < n; i++) {
+    const start = rotation + i * arc;
+    const end   = start + arc;
+
+    // Slice
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = PALETTE[i % PALETTE.length];
+    ctx.fill();
+    ctx.strokeStyle = '#0a0a0f';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + arc / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${Math.min(14, 90 / n + 6)}px Inter, sans-serif`;
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 4;
+    // Truncate long labels
+    const label = wheelOptions[i].length > 16 ? wheelOptions[i].slice(0, 15) + '…' : wheelOptions[i];
+    ctx.fillText(label, r - 10, 5);
+    ctx.restore();
+  }
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 18, 0, 2 * Math.PI);
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+function spinWheel() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById('spin-btn').disabled = true;
+
+  const n = wheelOptions.length;
+  const arc = (2 * Math.PI) / n;
+
+  let targetIndex;
+  if (isRigged.wheel) {
+    targetIndex = riggedPick.wheel % n;
+  } else {
+    targetIndex = Math.floor(Math.random() * n);
+  }
+
+  // Calculate angle so pointer (top = -π/2) lands on targetIndex
+  // Slice i starts at: wheelAngle + i * arc
+  // We want pointer at top (-PI/2) → target center at (wheelAngle + targetIndex*arc + arc/2) ≡ -PI/2 + 2kPI
+  const spins = 6 + Math.floor(Math.random() * 4); // 6–9 full rotations
+  const targetSliceCenter = -(targetIndex * arc + arc / 2);
+  // Add random jitter within slice (±35% of arc) for realism
+  const jitter = (Math.random() - 0.5) * arc * 0.7;
+  const finalAngle = targetSliceCenter - Math.PI / 2 + jitter + spins * 2 * Math.PI;
+
+  const startAngle = wheelAngle % (2 * Math.PI);
+  const totalRotation = finalAngle - startAngle;
+  const duration = 4000 + Math.random() * 1500;
+  const startTime = performance.now();
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const eased = 1 - Math.pow(1 - t, 3);
+    const angle = startAngle + totalRotation * eased;
+    wheelAngle = angle;
+    drawWheel(angle);
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      spinning = false;
+      document.getElementById('spin-btn').disabled = false;
+      showResult('wheel', targetIndex);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+// ══ SWIPE CARDS ════════════════════════════════════════════════
+function launchSwipe() {
+  swipeOptions = getOptionValues('swipe');
+  if (swipeOptions.length < 2) { alert('Add at least 2 options!'); return; }
+
+  isRigged.swipe  = document.getElementById('swipe-rigged-toggle').checked;
+  riggedPick.swipe = parseInt(document.getElementById('swipe-rigged-pick').value);
+  riggedMsg.swipe  = document.getElementById('swipe-rigged-msg').value.trim()
+    || `That's what the cards wanted all along 💫`;
+
+  swipeYeses = [];
+  swipeCurrent = 0;
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('swipe-game').classList.add('active');
+
+  buildCards();
+  updateSwipeProgress();
+}
+
+function buildCards() {
+  const stack = document.getElementById('card-stack');
+  stack.innerHTML = '';
+  swipeCards = [];
+
+  // Build in reverse so top card is last in DOM
+  for (let i = swipeOptions.length - 1; i >= 0; i--) {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const nope = document.createElement('div');
+    nope.className = 'swipe-vote nope'; nope.textContent = 'NOPE';
+    const yep  = document.createElement('div');
+    yep.className  = 'swipe-vote yep';  yep.textContent = 'YEP!';
+
+    card.innerHTML = `
+      <div class="card-emoji">${EMOJIS[i % EMOJIS.length]}</div>
+      <div class="card-label">${swipeOptions[i]}</div>
+      <div class="card-num">${i + 1} of ${swipeOptions.length}</div>
+    `;
+    card.appendChild(nope);
+    card.appendChild(yep);
+
+    // Stacking style
+    const depth = swipeOptions.length - 1 - i;
+    if (depth === 1) card.classList.add('behind-1');
+    else if (depth >= 2) card.classList.add('behind-2');
+
+    stack.appendChild(card);
+    swipeCards.push({ el: card, index: i });
+
+    if (depth === 0) addDragListeners(card, i);
+  }
+}
+
+function getTopCard() {
+  return swipeCards.find(c => !c.el.classList.contains('behind-1') && !c.el.classList.contains('behind-2') && c.el.style.display !== 'none' && !c.swiped);
+}
+
+function addDragListeners(card, optIndex) {
+  card.addEventListener('mousedown', dragStart);
+  card.addEventListener('touchstart', dragStart, { passive: true });
+
+  function dragStart(e) {
+    if (isDragging) return;
+    isDragging = true;
+    const pt = e.touches ? e.touches[0] : e;
+    startX = pt.clientX; startY = pt.clientY;
+    currentX = 0;
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('touchend', dragEnd);
+  }
+
+  function dragMove(e) {
+    if (!isDragging) return;
+    if (e.cancelable) e.preventDefault();
+    const pt = e.touches ? e.touches[0] : e;
+    currentX = pt.clientX - startX;
+    const rotate = currentX * 0.08;
+    card.style.transform = `translateX(${currentX}px) rotate(${rotate}deg)`;
+    card.style.transition = 'none';
+
+    const nope = card.querySelector('.nope');
+    const yep  = card.querySelector('.yep');
+    const ratio = Math.abs(currentX) / 120;
+    if (currentX < -20) {
+      nope.style.opacity = Math.min(ratio, 1);
+      yep.style.opacity = 0;
+    } else if (currentX > 20) {
+      yep.style.opacity = Math.min(ratio, 1);
+      nope.style.opacity = 0;
+    } else {
+      nope.style.opacity = 0; yep.style.opacity = 0;
+    }
+  }
+
+  function dragEnd() {
+    if (!isDragging) return;
+    isDragging = false;
+    document.removeEventListener('mousemove', dragMove);
+    document.removeEventListener('mouseup', dragEnd);
+    document.removeEventListener('touchmove', dragMove);
+    document.removeEventListener('touchend', dragEnd);
+
+    if (currentX > 80) finishSwipe(card, optIndex, 'right');
+    else if (currentX < -80) finishSwipe(card, optIndex, 'left');
+    else {
+      // snap back
+      card.style.transition = 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+      card.style.transform = 'translateX(0) rotate(0deg)';
+      card.querySelector('.nope').style.opacity = 0;
+      card.querySelector('.yep').style.opacity  = 0;
+    }
+  }
+}
+
+function swipeCard(direction) {
+  const top = swipeCards.filter(c => !c.swiped)[0];
+  if (!top) return;
+  finishSwipe(top.el, top.index, direction);
+}
+
+function finishSwipe(card, optIndex, direction) {
+  const isYes = direction === 'right';
+  if (isYes) swipeYeses.push(optIndex);
+
+  card.querySelector('.nope').style.opacity = isYes ? 0 : 1;
+  card.querySelector('.yep').style.opacity  = isYes ? 1 : 0;
+
+  card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+  card.style.transform  = `translateX(${isYes ? 500 : -500}px) rotate(${isYes ? 30 : -30}deg)`;
+  card.style.opacity    = '0';
+
+  const cardObj = swipeCards.find(c => c.el === card);
+  if (cardObj) cardObj.swiped = true;
+
+  swipeCurrent++;
+
+  setTimeout(() => {
+    card.style.display = 'none';
+    // promote next cards from stack
+    const remaining = swipeCards.filter(c => !c.swiped);
+    remaining.forEach((c, idx) => {
+      c.el.classList.remove('behind-1','behind-2');
+      c.el.style.transform = '';
+      if (idx === 1) c.el.classList.add('behind-1');
+      else if (idx >= 2) c.el.classList.add('behind-2');
+      else {
+        // Top card — add listeners
+        c.el.style.transition = 'transform 0.3s ease';
+        addDragListeners(c.el, c.index);
+      }
+    });
+
+    updateSwipeProgress();
+
+    if (swipeCurrent >= swipeOptions.length) {
+      setTimeout(() => resolveSwipe(), 400);
+    }
+  }, 500);
+}
+
+function updateSwipeProgress() {
+  const rem = swipeOptions.length - swipeCurrent;
+  document.getElementById('swipe-progress').textContent =
+    rem > 0 ? `${rem} option${rem > 1 ? 's' : ''} left — swipe away!` : 'Tallying results…';
+}
+
+function resolveSwipe() {
+  let winner;
+  if (isRigged.swipe) {
+    winner = riggedPick.swipe % swipeOptions.length;
+  } else {
+    if (swipeYeses.length > 0) {
+      winner = swipeYeses[Math.floor(Math.random() * swipeYeses.length)];
+    } else {
+      winner = Math.floor(Math.random() * swipeOptions.length);
+    }
+  }
+  showResult('swipe', winner);
+}
+
+// ══ RESULT MODAL ═══════════════════════════════════════════════
+function showResult(type, index) {
+  const opts = type === 'wheel' ? wheelOptions : swipeOptions;
+  const pick = opts[index] || opts[0];
+  const msg  = isRigged[type] ? riggedMsg[type] : `${pick} it is! This is going to be great 🥳`;
+
+  document.getElementById('res-emoji').textContent = '🎉';
+  document.getElementById('res-title').textContent = "It's decided!";
+  document.getElementById('res-pick').textContent  = pick;
+  document.getElementById('res-msg').textContent   = msg;
+
+  const replayBtn = document.getElementById('res-replay-btn');
+  replayBtn.textContent = type === 'wheel' ? '🎡 Spin Again' : '💘 Play Again';
+  replayBtn.onclick = () => { closeResult(); if (type === 'wheel') spinWheel(); else restartSwipe(); };
+
+  document.getElementById('result-overlay').classList.add('show');
+  launchConfetti();
+}
+
+function closeResult() {
+  document.getElementById('result-overlay').classList.remove('show');
+  stopConfetti();
+}
+
+function restartSwipe() {
+  swipeYeses = []; swipeCurrent = 0;
+  buildCards();
+  updateSwipeProgress();
+}
+
+function backToConfig(type) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(type + '-config').classList.add('active');
+}
+
+// ══ CONFETTI ═══════════════════════════════════════════════════
+let confettiAnim;
+let particles = [];
+
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.style.display = 'block';
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  particles = [];
+
+  for (let i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: 8 + Math.random() * 8,
+      h: 4 + Math.random() * 6,
+      color: PALETTE[Math.floor(Math.random() * PALETTE.length)],
+      vx: (Math.random() - 0.5) * 3,
+      vy: 2 + Math.random() * 4,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.2,
+      alpha: 1
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.angle += p.spin;
+      if (p.y > canvas.height * 0.8) p.alpha -= 0.02;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.globalAlpha = Math.max(p.alpha, 0);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    particles = particles.filter(p => p.alpha > 0);
+    if (particles.length > 0) confettiAnim = requestAnimationFrame(draw);
+    else stopConfetti();
+  }
+  if (confettiAnim) cancelAnimationFrame(confettiAnim);
+  confettiAnim = requestAnimationFrame(draw);
+}
+
+function stopConfetti() {
+  cancelAnimationFrame(confettiAnim);
+  document.getElementById('confetti-canvas').style.display = 'none';
+  particles = [];
+}
+</script>
+</body>
+</html>

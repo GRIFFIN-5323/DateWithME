@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>💌 A little question...</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(140,10,55,0.65) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 80%, rgba(90,0,40,0.55) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, #1e0012 0%, #090006 70%, #04000a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Lato', sans-serif;
+}
+
+/* ── Ambient glows ── */
+.glow { position:fixed; border-radius:50%; filter:blur(90px); pointer-events:none; z-index:0; }
+.g1 { width:500px;height:500px; background:rgba(200,10,70,0.14); top:-150px;left:-100px; animation:drift1 12s ease-in-out infinite alternate; }
+.g2 { width:380px;height:380px; background:rgba(240,50,120,0.09); bottom:-80px;right:-80px; animation:drift2 15s ease-in-out infinite alternate; }
+.g3 { width:200px;height:200px; background:rgba(255,120,200,0.07); top:40%;left:10%; animation:drift1 9s ease-in-out infinite alternate; }
+@keyframes drift1 { from{transform:translate(0,0)} to{transform:translate(30px,20px)} }
+@keyframes drift2 { from{transform:translate(0,0)} to{transform:translate(-25px,-15px)} }
+
+#petal-canvas { position:fixed; inset:0; pointer-events:none; z-index:1; }
+
+/* ── Twinkling stars ── */
+.star {
+  position: fixed;
+  border-radius: 50%;
+  background: white;
+  pointer-events: none;
+  z-index: 2;
+  animation: twinkle var(--dur, 2s) ease-in-out infinite var(--delay, 0s) alternate;
+}
+@keyframes twinkle {
+  from { opacity: 0.05; transform: scale(0.6); }
+  to   { opacity: 0.9;  transform: scale(1.3); }
+}
+
+/* ── Rising hearts ── */
+.rising-heart {
+  position: fixed;
+  font-size: var(--sz, 1rem);
+  pointer-events: none;
+  z-index: 3;
+  animation: riseUp var(--dur, 5s) ease-in forwards;
+  bottom: -50px;
+}
+@keyframes riseUp {
+  0%   { transform: translateY(0) scale(1) rotate(0deg);   opacity: 0.8; }
+  70%  { opacity: 0.6; }
+  100% { transform: translateY(-110vh) scale(0.5) rotate(var(--rot, 20deg)); opacity: 0; }
+}
+
+/* ── Cursor trail hearts ── */
+.cursor-sparkle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 999;
+  font-size: var(--sz, 0.9rem);
+  animation: sparkleUp 0.9s ease-out forwards;
+  transform-origin: center;
+}
+@keyframes sparkleUp {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-50px) scale(0.2); opacity: 0; }
+}
+
+/* ── Butterflies ── */
+.butterfly {
+  position: fixed;
+  font-size: 1.4rem;
+  pointer-events: none;
+  z-index: 8;
+  filter: drop-shadow(0 0 6px rgba(255,180,220,0.6));
+}
+.bf1 { animation: bf1fly 10s ease-in-out infinite; }
+.bf2 { animation: bf2fly 13s ease-in-out infinite 2s; }
+.bf3 { animation: bf3fly 11s ease-in-out infinite 5s; }
+
+@keyframes bf1fly {
+  0%   { transform: translate(calc(50vw - 220px), calc(50vh - 120px)) scaleX(1); }
+  25%  { transform: translate(calc(50vw + 180px), calc(50vh - 160px)) scaleX(-1); }
+  50%  { transform: translate(calc(50vw + 200px), calc(50vh + 80px))  scaleX(1); }
+  75%  { transform: translate(calc(50vw - 200px), calc(50vh + 60px))  scaleX(-1); }
+  100% { transform: translate(calc(50vw - 220px), calc(50vh - 120px)) scaleX(1); }
+}
+@keyframes bf2fly {
+  0%   { transform: translate(calc(50vw + 160px), calc(50vh + 140px)) scaleX(1); }
+  33%  { transform: translate(calc(50vw - 170px), calc(50vh - 100px)) scaleX(-1); }
+  66%  { transform: translate(calc(50vw + 140px), calc(50vh - 90px))  scaleX(1); }
+  100% { transform: translate(calc(50vw + 160px), calc(50vh + 140px)) scaleX(1); }
+}
+@keyframes bf3fly {
+  0%   { transform: translate(calc(50vw - 240px), calc(50vh + 100px)) scaleX(-1); }
+  40%  { transform: translate(calc(50vw + 200px), calc(50vh + 120px)) scaleX(1); }
+  80%  { transform: translate(calc(50vw - 60px),  calc(50vh - 160px)) scaleX(-1); }
+  100% { transform: translate(calc(50vw - 240px), calc(50vh + 100px)) scaleX(-1); }
+}
+
+/* ── Main card ── */
+#card {
+  position: relative; z-index: 10;
+  background: linear-gradient(145deg, rgba(255,245,250,0.07), rgba(255,215,235,0.04));
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255,170,210,0.2);
+  border-radius: 32px;
+  padding: 36px 46px 46px;
+  text-align: center;
+  max-width: 400px; width: 92vw;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 0 70px rgba(210,15,80,0.16),
+    0 30px 80px rgba(0,0,0,0.5);
+  animation: cardBreath 5s ease-in-out infinite;
+}
+@keyframes cardBreath {
+  0%,100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.04) inset, 0 0 70px rgba(210,15,80,0.16), 0 30px 80px rgba(0,0,0,0.5); }
+  50%      { box-shadow: 0 0 0 1px rgba(255,255,255,0.04) inset, 0 0 110px rgba(240,20,100,0.26), 0 30px 80px rgba(0,0,0,0.5); }
+}
+
+/* Card ribbon corners */
+#card::before, #card::after {
+  content: '';
+  position: absolute;
+  width: 50px; height: 50px;
+  border: 2px solid rgba(255,160,200,0.22);
+  pointer-events: none;
+}
+#card::before { top: 12px; left: 12px; border-right: none; border-bottom: none; border-radius: 12px 0 0 0; }
+#card::after  { bottom: 12px; right: 12px; border-left: none; border-top: none; border-radius: 0 0 12px 0; }
+
+/* Bow at top */
+.bow-wrap {
+  position: absolute;
+  top: -18px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.8rem;
+  filter: drop-shadow(0 2px 8px rgba(255,100,180,0.5));
+  animation: bowBounce 3s ease-in-out infinite;
+  z-index: 20;
+}
+@keyframes bowBounce {
+  0%,100% { transform: translateX(-50%) rotate(-5deg) scale(1); }
+  50%      { transform: translateX(-50%) rotate( 5deg) scale(1.08); }
+}
+
+/* Pixel cat */
+#cat-canvas {
+  display: block; margin: 10px auto 16px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Deco */
+.deco-line { display:flex; align-items:center; gap:10px; margin-bottom:14px; opacity:0.4; }
+.deco-line::before,.deco-line::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(255,160,200,0.9),transparent); }
+.deco-line span { font-size:0.72rem; color:#ffb3c6; white-space:nowrap; letter-spacing:2px; }
+
+/* Question */
+.question {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem, 5vw, 1.9rem);
+  color: #ffe0ec;
+  text-shadow: 0 2px 24px rgba(255,80,150,0.4);
+  line-height: 1.45; margin-bottom: 8px;
+}
+.sub {
+  font-size: 0.82rem; color: rgba(255,185,220,0.55);
+  font-style: italic; margin-bottom: 18px; letter-spacing: 0.5px;
+}
+
+/* Cute aesthetic badges */
+.cute-badges {
+  display: flex; gap: 8px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 24px;
+}
+.cute-badges span {
+  background: rgba(255,170,210,0.1);
+  border: 1px solid rgba(255,160,200,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  color: rgba(255,195,225,0.7);
+  letter-spacing: 0.5px;
+}
+
+/* Button row */
+.btn-row { display:flex; gap:14px; justify-content:center; align-items:center; }
+
+/* YES button */
+#yes-btn {
+  --yes-scale: 1;
+  position: relative;
+  padding: 14px 38px;
+  background: linear-gradient(135deg, #ff4d8d 0%, #c41049 100%);
+  color: white; border: none; border-radius: 999px;
+  font-family: 'Lato', sans-serif;
+  font-size: 1rem; font-weight: 700; letter-spacing: 0.5px;
+  cursor: pointer;
+  transform: scale(var(--yes-scale));
+  animation: yesPulse 2.5s ease-in-out infinite;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  z-index: 5; overflow: visible;
+}
+@keyframes yesPulse {
+  0%,100% { box-shadow: 0 4px 28px rgba(255,30,100,0.5); }
+  50%      { box-shadow: 0 4px 36px rgba(255,30,100,0.8), 0 0 0 10px rgba(255,80,140,0); }
+}
+#yes-btn:hover { transform: scale(calc(var(--yes-scale) * 1.08)); box-shadow: 0 6px 40px rgba(255,30,100,0.85); }
+#yes-btn:active { transform: scale(calc(var(--yes-scale) * 0.96)); }
+
+/* Orbiting sparkles around Yes button */
+.orbit-wrap {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: none;
+}
+.orbit-dot {
+  position: absolute;
+  font-size: 0.8rem;
+  top: 50%; left: 50%;
+  animation: orbitStar var(--dur, 3s) linear infinite var(--delay, 0s);
+}
+@keyframes orbitStar {
+  0%   { transform: rotate(0deg)   translateX(var(--r, 44px)) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(var(--r, 44px)) rotate(-360deg); }
+}
+
+/* Footer note */
+.card-footer {
+  margin-top: 20px;
+  font-size: 0.75rem;
+  color: rgba(255,185,215,0.4);
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+/* ── NO BUTTON — solid visible color, starts in card, then flees around the whole screen ── */
+#no-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #3d0c26 0%, #1f0413 100%);
+  color: #ffb8da;
+  border: 2px solid #ff4d8d;
+  border-radius: 999px;
+  font-family: 'Lato', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(255, 50, 120, 0.45), 0 0 10px rgba(255, 100, 180, 0.3);
+  transition: left 0.3s cubic-bezier(0.34, 1.5, 0.64, 1),
+              top 0.3s cubic-bezier(0.34, 1.5, 0.64, 1),
+              box-shadow 0.2s ease;
+}
+#no-btn:hover {
+  background: linear-gradient(135deg, #521235 0%, #29061b 100%);
+  border-color: #ff75ac;
+}
+
+/* ── YES SCREEN ── */
+#yes-screen {
+  position: fixed; inset: 0; z-index: 999;
+  display: none;
+  align-items: center; justify-content: center; flex-direction: column;
+  text-align: center; padding: 24px;
+  background: radial-gradient(ellipse at 50% 40%, #3d0520 0%, #0d0005 60%, #04000a 100%);
+}
+#yes-screen.show { display: flex; }
+
+.yes-emojis { font-size:3.5rem; margin-bottom:20px; animation:floatUp 1.5s ease-out both; }
+.yes-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 7vw, 3rem); color: #ffb3cc;
+  text-shadow: 0 0 40px rgba(255,80,150,0.7);
+  margin-bottom: 14px;
+  animation: floatUp 1.5s ease-out 0.1s both, glowCycle 3s ease-in-out infinite;
+}
+.yes-sub {
+  color: rgba(255,195,220,0.7); font-size: 1rem;
+  font-style: italic; line-height: 1.8; max-width: 320px;
+  animation: floatUp 1.5s ease-out 0.2s both;
+}
+.yes-badges {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  margin-top: 20px;
+  animation: floatUp 1.5s ease-out 0.35s both;
+}
+.yes-badges span {
+  background: rgba(255,160,200,0.12);
+  border: 1px solid rgba(255,140,190,0.3);
+  border-radius: 999px; padding: 6px 16px;
+  font-size: 0.8rem; color: rgba(255,200,230,0.8);
+}
+
+@keyframes floatUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes glowCycle {
+  0%,100% { text-shadow: 0 0 20px rgba(255,80,150,0.4); }
+  50%      { text-shadow: 0 0 60px rgba(255,100,170,0.9); }
+}
+@keyframes fallDown {
+  0%   { transform: translateY(-60px) rotate(0deg); opacity: 1; }
+  80%  { opacity: 0.9; }
+  100% { transform: translateY(110vh) rotate(var(--rot)); opacity: 0; }
+}
+
+/* ── Mobile Optimization ── */
+@media (max-width: 480px) {
+  #card {
+    padding: 26px 18px 30px;
+    width: 90vw;
+    max-width: 350px;
+    border-radius: 26px;
+  }
+  .bow-wrap { font-size: 1.5rem; top: -14px; }
+  .question { font-size: 1.45rem; line-height: 1.35; margin-bottom: 6px; }
+  .sub { font-size: 0.76rem; margin-bottom: 14px; }
+  .cute-badges { margin-bottom: 18px; gap: 5px; }
+  .cute-badges span { padding: 3px 9px; font-size: 0.68rem; }
+  .btn-row { gap: 10px; }
+  #yes-btn { padding: 12px 28px; font-size: 0.95rem; }
+  #no-btn { padding: 12px 22px; font-size: 0.92rem; }
+  .card-footer { margin-top: 14px; font-size: 0.7rem; }
+  .butterfly { font-size: 1.1rem; }
+  .yes-title { font-size: 2.1rem; }
+  .yes-sub { font-size: 0.9rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="glow g1"></div>
+<div class="glow g2"></div>
+<div class="glow g3"></div>
+
+<!-- Petal canvas -->
+<canvas id="petal-canvas"></canvas>
+
+<!-- Butterflies -->
+<div class="butterfly bf1">🦋</div>
+<div class="butterfly bf2">🦋</div>
+<div class="butterfly bf3">🦋</div>
+
+<!-- Main card -->
+<div id="card">
+  <div class="bow-wrap">🎀</div>
+
+  <canvas id="cat-canvas"></canvas>
+
+  <div class="deco-line"><span>✿ &nbsp; 🌸 &nbsp; ✿</span></div>
+  <div class="question">Will you go on a<br>date with me? 🌹</div>
+  <div class="sub">🥺 it would mean the whole world to me 🥺</div>
+
+  <div class="cute-badges">
+    <span>🌸 romantic</span>
+    <span>✨ magical</span>
+    <span>💕 so fun</span>
+    <span>🦋 dreamy</span>
+  </div>
+
+  <div class="btn-row">
+    <button id="yes-btn">
+      Yes! 💖
+      <div class="orbit-wrap">
+        <span class="orbit-dot" style="--dur:3.0s;--delay:0.0s;--r:50px">✨</span>
+        <span class="orbit-dot" style="--dur:3.0s;--delay:1.0s;--r:50px">💫</span>
+        <span class="orbit-dot" style="--dur:3.0s;--delay:2.0s;--r:50px">⭐</span>
+      </div>
+    </button>
+    <button id="no-btn">No 🙁</button>
+  </div>
+
+  <div class="card-footer">🌙 pinky promise it'll be absolutely perfect 🤍</div>
+</div>
+
+<!-- Yes screen -->
+<div id="yes-screen">
+  <div class="yes-emojis">🌹 💖 ✨</div>
+  <div class="yes-title">Yesssss!! 🥰</div>
+  <div class="yes-sub">
+    I knew you would!!<br>
+    This is going to be the most magical date 🌹✨<br><br>
+    I literally can't stop smiling right now 💕
+  </div>
+  <div class="yes-badges">
+    <span>🎀 so exciting</span>
+    <span>🦋 butterflies!!!</span>
+    <span>🌸 can't wait</span>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ══════════════════════════════════════════
+//  FALLING ROSE + SAKURA PETALS
+// ══════════════════════════════════════════
+(function() {
+  const cv  = document.getElementById('petal-canvas');
+  const ctx = cv.getContext('2d');
+
+  const ROSE_COLORS   = ['#ff4d7a','#ff6b8a','#e01050','#c9184a','#ff0054','#d62862'];
+  const SAKURA_COLORS = ['#ffb3c6','#ffc8d8','#ffd6e7','#ffe0ee','#ffcce0','#f9a8c0'];
+
+  function resize() { cv.width = innerWidth; cv.height = innerHeight; }
+  resize(); addEventListener('resize', resize);
+
+  function mkPetal(type) {
+    const isRose = type === 'rose';
+    return {
+      type: type,
+      x: Math.random() * cv.width,
+      y: -30 - Math.random() * 150,
+      r: isRose ? (7 + Math.random() * 14) : (4 + Math.random() * 9),
+      vy: (isRose ? 0.5 : 0.35) + Math.random() * 1.1,
+      vx: (Math.random() - 0.5) * 0.9,
+      angle: Math.random() * Math.PI * 2,
+      spin:  (Math.random() - 0.5) * (isRose ? 0.045 : 0.07),
+      sway:  Math.random() * Math.PI * 2,
+      swayS: 0.007 + Math.random() * 0.015,
+      col:   isRose
+        ? ROSE_COLORS  [Math.floor(Math.random() * ROSE_COLORS.length)]
+        : SAKURA_COLORS[Math.floor(Math.random() * SAKURA_COLORS.length)],
+      alpha: isRose ? (0.35 + Math.random() * 0.5) : (0.3 + Math.random() * 0.55),
+    };
+  }
+
+  const petals = [];
+  for (let i = 0; i < 35; i++) { const p = mkPetal('rose');   p.y = Math.random() * cv.height; petals.push(p); }
+  for (let i = 0; i < 30; i++) { const p = mkPetal('sakura'); p.y = Math.random() * cv.height; petals.push(p); }
+
+  function drawPetal(p) {
+    ctx.save();
+    ctx.globalAlpha = p.alpha;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle);
+    ctx.fillStyle = p.col;
+    if (p.type === 'rose') {
+      // Teardrop petal
+      ctx.beginPath();
+      ctx.moveTo(0, -p.r);
+      ctx.bezierCurveTo( p.r*.75,-p.r*.4, p.r*.75, p.r*.5,  0, p.r);
+      ctx.bezierCurveTo(-p.r*.75, p.r*.5,-p.r*.75,-p.r*.4,  0,-p.r);
+      ctx.fill();
+      ctx.globalAlpha = p.alpha * 0.22;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.ellipse(-p.r*.18,-p.r*.3, p.r*.18, p.r*.38, -0.4, 0, Math.PI*2);
+      ctx.fill();
+    } else {
+      // Rounded sakura petal
+      ctx.beginPath();
+      ctx.ellipse(0, 0, p.r * 0.55, p.r, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = p.alpha * 0.3;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.ellipse(-p.r*.1,-p.r*.3, p.r*.12, p.r*.35, -0.3, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  (function loop() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    for (let i = 0; i < petals.length; i++) {
+      const p = petals[i];
+      p.sway += p.swayS; p.x += Math.sin(p.sway)*1.1 + p.vx;
+      p.y += p.vy; p.angle += p.spin;
+      drawPetal(p);
+      if (p.y > cv.height + 40) {
+        petals[i] = mkPetal(Math.random() < 0.55 ? 'rose' : 'sakura');
+      }
+    }
+    requestAnimationFrame(loop);
+  })();
+})();
+
+
+// ══════════════════════════════════════════
+//  TWINKLING STARS
+// ══════════════════════════════════════════
+(function() {
+  for (let i = 0; i < 90; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = 1 + Math.random() * 3;
+    s.style.cssText = `
+      left: ${Math.random() * 100}vw;
+      top:  ${Math.random() * 100}vh;
+      width: ${sz}px; height: ${sz}px;
+      --dur: ${1.2 + Math.random() * 2.5}s;
+      --delay: ${Math.random() * 3}s;
+    `;
+    document.body.appendChild(s);
+  }
+})();
+
+
+// ══════════════════════════════════════════
+//  RISING HEART BUBBLES
+// ══════════════════════════════════════════
+(function() {
+  const pool = ['💖','💕','💗','💓','💝','🌸','✨','💫','🌷'];
+  function spawn() {
+    const el  = document.createElement('div');
+    el.className = 'rising-heart';
+    const dur = 5 + Math.random() * 5;
+    const rot = -30 + Math.random() * 60;
+    const sz  = 0.75 + Math.random() * 1.1;
+    el.textContent = pool[Math.floor(Math.random() * pool.length)];
+    el.style.cssText = `
+      left: ${5 + Math.random() * 90}vw;
+      --dur: ${dur}s;
+      --rot: ${rot}deg;
+      --sz:  ${sz}rem;
+      font-size: ${sz}rem;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), dur * 1000 + 200);
+  }
+  spawn();
+  setInterval(spawn, 900);
+})();
+
+
+// ══════════════════════════════════════════
+//  CURSOR SPARKLE TRAIL
+// ══════════════════════════════════════════
+(function() {
+  const pool = ['💖','✨','🌸','💫','⭐','💕','🦋'];
+  let lastTime = 0;
+
+  document.addEventListener('mousemove', e => {
+    const now = Date.now();
+    if (now - lastTime < 70) return; // throttle
+    lastTime = now;
+
+    const el = document.createElement('div');
+    el.className = 'cursor-sparkle';
+    el.textContent = pool[Math.floor(Math.random() * pool.length)];
+    const sz = 0.65 + Math.random() * 0.65;
+    el.style.cssText = `
+      left: ${e.clientX - 10}px;
+      top:  ${e.clientY - 10}px;
+      --sz: ${sz}rem;
+      font-size: ${sz}rem;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  });
+})();
+
+
+// ══════════════════════════════════════════
+//  PIXEL CAT
+// ══════════════════════════════════════════
+(function() {
+  const cv  = document.getElementById('cat-canvas');
+  const ctx = cv.getContext('2d');
+  const S   = 5;
+
+  const _ = null, O = '#f4a261', Q = '#e08040',
+        L = '#fde8cc', D = '#2d1000', E = '#90caf9',
+        K = '#0d1b2a', P = '#f8bbd0';
+
+  const frOpen = [
+    [_,_,_,D,O,D,_,_,_,_,_,_,_,D,O,D,_,_],
+    [_,_,D,O,P,O,D,_,_,_,_,_,D,O,P,O,D,_],
+    [_,D,O,O,O,O,O,D,_,_,_,D,O,O,O,O,O,D],
+    [D,O,O,O,O,O,O,O,D,_,D,O,O,O,O,O,O,O,D],
+    [D,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,D],
+    [D,O,E,E,O,L,O,O,O,O,O,O,L,O,E,E,O,O,D],
+    [D,O,K,K,O,O,D,_,_,_,D,O,O,O,K,K,O,O,D],
+    [D,O,O,O,L,O,O,P,_,P,O,O,L,O,O,O,O,O,D],
+    [_,D,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,D,_],
+    [_,D,O,O,O,Q,O,O,O,O,O,O,Q,O,O,O,O,D,_],
+    [_,D,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,D,_],
+    [_,D,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,D,_],
+    [_,D,D,O,O,_,_,_,O,O,O,_,_,_,O,O,D,D,_],
+    [_,_,D,D,_,_,_,_,_,_,_,_,_,_,_,D,D,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+  ];
+  const frHalf = frOpen.map((row, r) => row.map((c, col) => {
+    if (r===5 && (col===2||col===3||col===14||col===15)) return D;
+    if (r===6 && (col===2||col===3||col===14||col===15)) return O;
+    return c;
+  }));
+  const frClosed = frOpen.map((row, r) => row.map((c, col) => {
+    if (r===5 && (col===2||col===3||col===14||col===15)) return D;
+    if (r===5 && (col===4||col===5||col===12||col===13)) return L;
+    if (r===6 && (col===2||col===3||col===14||col===15)) return O;
+    if (r===6 && (col===6||col===10)) return O;
+    return c;
+  }));
+
+  cv.width  = 19*S + 24;
+  cv.height = 15*S + 44;
+  cv.style.width  = cv.width  + 'px';
+  cv.style.height = cv.height + 'px';
+
+  function drawMap(map, ox, oy) {
+    map.forEach((row, r) => row.forEach((col, c) => {
+      if (!col) return;
+      ctx.fillStyle = col;
+      ctx.fillRect(ox + c*S, oy + r*S, S, S);
+    }));
+  }
+
+  function drawTail(phase) {
+    const sx = 15*S, sy = 9*S;
+    const swX = Math.sin(phase) * 11;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineWidth = S+3; ctx.strokeStyle = D;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.bezierCurveTo(sx+16+swX, sy+14, sx+14+swX, sy+30, sx+1+swX*0.5, sy+40);
+    ctx.stroke();
+    ctx.lineWidth = S-1; ctx.strokeStyle = O;
+    ctx.stroke();
+    ctx.lineWidth = 2; ctx.strokeStyle = L; ctx.globalAlpha = 0.45;
+    ctx.beginPath();
+    ctx.moveTo(sx+13+swX, sy+28); ctx.lineTo(sx+2+swX*0.5, sy+40);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawWhiskers() {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(253,232,204,0.4)';
+    ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+    const wy = 7*S + 2;
+    for (let i=-1;i<=1;i++) { ctx.beginPath(); ctx.moveTo(S, wy+i*5); ctx.lineTo(-16, wy+i*9); ctx.stroke(); }
+    const rx = 18*S;
+    for (let i=-1;i<=1;i++) { ctx.beginPath(); ctx.moveTo(rx, wy+i*5); ctx.lineTo(rx+16, wy+i*9); ctx.stroke(); }
+    ctx.restore();
+  }
+
+  const BLINK = [
+    {f:'open',d:170},{f:'half',d:5},{f:'closed',d:8},{f:'half',d:5},
+    {f:'open',d:220},{f:'half',d:5},{f:'closed',d:7},{f:'half',d:5},
+  ];
+  let bIdx=0, bTick=0, tailPhase=0, bobTick=0;
+  const mapOf = {open:frOpen, half:frHalf, closed:frClosed};
+
+  (function render() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    tailPhase += 0.048; bobTick++;
+    if (++bTick >= BLINK[bIdx].d) { bTick=0; bIdx=(bIdx+1)%BLINK.length; }
+    const name = BLINK[bIdx].f;
+    const bob  = Math.round(Math.sin(bobTick * 0.03) * 1.5);
+    drawTail(tailPhase);
+    drawMap(mapOf[name], 0, bob);
+    if (name==='open') drawWhiskers();
+    requestAnimationFrame(render);
+  })();
+})();
+
+
+// ══════════════════════════════════════════
+//  NO BUTTON — IN CARD FIRST, RUNS ALL OVER SCREEN
+// ══════════════════════════════════════════
+(function() {
+  const btn = document.getElementById('no-btn');
+  const yesBtn = document.getElementById('yes-btn');
+  if (!btn) return;
+
+  let isFloating = false;
+  let yesScale = 1.0;
+  let lastDodgeTime = 0;
+  const phrases = [
+    "No 🙁",
+    "Nope 😜",
+    "Can't catch me! 🏃‍♀️💨",
+    "Too slow! 🤭",
+    "Are you sure? 🥺",
+    "Nice try! 🙈",
+    "Try again! 🌸",
+    "Nu-uh! 💨",
+    "Over here! 🎀",
+    "Still no? 😂",
+    "Never! 💖"
+  ];
+  let phraseIdx = 0;
+
+  function dodge(cursorX, cursorY, boost = 0.22) {
+    const now = Date.now();
+    if (now - lastDodgeTime < 130) return; // Snappy dodge response
+    lastDodgeTime = now;
+
+    if (!isFloating) {
+      const rect = btn.getBoundingClientRect();
+      // Add a hidden spacer in the card so the Yes button layout doesn't shift
+      const spacer = document.createElement('div');
+      spacer.style.width = rect.width + 'px';
+      spacer.style.height = rect.height + 'px';
+      spacer.style.display = 'inline-block';
+      spacer.style.visibility = 'hidden';
+      btn.parentNode.insertBefore(spacer, btn);
+
+      // Move directly to body so it floats across the entire viewport
+      document.body.appendChild(btn);
+      btn.style.position = 'fixed';
+      btn.style.left = rect.left + 'px';
+      btn.style.top = rect.top + 'px';
+      isFloating = true;
+    }
+
+    // Noticeable chunky surge (+22% to +28% each touch/dodge!)
+    yesScale += boost;
+    if (yesBtn) {
+      yesBtn.style.setProperty('--yes-scale', yesScale.toFixed(3));
+      const glowAmt = Math.min(85, Math.round(30 + (yesScale - 1) * 28));
+      yesBtn.style.boxShadow = `0 6px ${glowAmt}px rgba(255, 30, 100, 0.9), 0 0 ${glowAmt / 2}px rgba(255, 120, 190, 0.7)`;
+    }
+
+    const bw = btn.offsetWidth || 100;
+    const bh = btn.offsetHeight || 44;
+    const isMobile = window.innerWidth <= 480;
+    const pad = isMobile ? 14 : 30;
+    const topPad = isMobile ? 55 : 30; // avoids mobile camera notch
+    const botPad = isMobile ? 45 : 30; // avoids mobile home indicator
+
+    const maxW = window.innerWidth - bw - pad;
+    const maxH = window.innerHeight - bh - botPad;
+
+    let nx, ny;
+    let attempts = 0;
+
+    // Pick a new spot anywhere on screen that is far from cursor/touch
+    do {
+      nx = pad + Math.random() * Math.max(10, maxW - pad);
+      ny = topPad + Math.random() * Math.max(10, maxH - topPad);
+      attempts++;
+    } while (
+      cursorX !== undefined &&
+      cursorY !== undefined &&
+      Math.hypot(nx + bw/2 - cursorX, ny + bh/2 - cursorY) < (isMobile ? 130 : 180) &&
+      attempts < 30
+    );
+
+    btn.style.left = Math.round(nx) + 'px';
+    btn.style.top = Math.round(ny) + 'px';
+
+    phraseIdx = (phraseIdx + 1) % phrases.length;
+    btn.textContent = phrases[phraseIdx];
+  }
+
+  // When cursor gets within 90px, the button immediately darts away!
+  document.addEventListener('mousemove', e => {
+    const rect = btn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    if (Math.hypot(cx - e.clientX, cy - e.clientY) < 90) {
+      dodge(e.clientX, e.clientY);
+    }
+  });
+
+  // Mobile touch: dodge whenever finger touches or drags near No
+  function checkTouch(t) {
+    const rect = btn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    if (Math.hypot(cx - t.clientX, cy - t.clientY) < 110) {
+      dodge(t.clientX, t.clientY);
+    }
+  }
+
+  document.addEventListener('touchstart', e => {
+    if (e.touches && e.touches[0]) checkTouch(e.touches[0]);
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (e.touches && e.touches[0]) checkTouch(e.touches[0]);
+  }, { passive: true });
+
+  btn.addEventListener('mouseenter', e => dodge(e.clientX, e.clientY, 0.25));
+  btn.addEventListener('touchstart', e => { e.preventDefault(); dodge(undefined, undefined, 0.28); }, { passive: false });
+  btn.addEventListener('click', e => { e.preventDefault(); dodge(undefined, undefined, 0.28); });
+})();
+
+
+// ══════════════════════════════════════════
+//  YES BUTTON
+// ══════════════════════════════════════════
+document.getElementById('yes-btn').addEventListener('click', () => {
+  document.getElementById('yes-screen').classList.add('show');
+  spawnFloaties();
+});
+
+function spawnFloaties() {
+  const pool = ['🌹','💖','✨','💕','🎀','🌸','💗','🫶','💝','🌷','🎉','🦋','🌟','💫','⭐'];
+  for (let i = 0; i < 65; i++) {
+    setTimeout(() => {
+      const el  = document.createElement('div');
+      const rot = -220 + Math.random() * 440;
+      const dur = 2.5 + Math.random() * 2.5;
+      const sz  = 1 + Math.random() * 2.2;
+      el.textContent = pool[Math.floor(Math.random() * pool.length)];
+      el.style.cssText = `
+        position:fixed; left:${Math.random()*100}vw; top:-60px;
+        font-size:${sz}rem; pointer-events:none; z-index:9999;
+        --rot:${rot}deg;
+        animation:fallDown ${dur}s linear forwards;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), (dur+0.5)*1000);
+    }, i * 90);
+  }
+}
+</script>
+</body>
+</html>
